@@ -1,6 +1,7 @@
 package jkind.interval;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -82,11 +83,28 @@ public class ModelGeneralizer {
 			throw new IllegalStateException("Internal JKind error during interval generalization");
 		}
 
-		// Generalize the list of user provided variables ..
-		for (StreamIndex si : indicies) {
-			if (basisModel.getVariableNames().contains(si.getEncoded().str)) {
-				Interval interval = generalizeInterval(si);
-				generalized.put(si, interval);
+		// Generalize the list of user provided variables ..		
+		List<StreamIndex> unGeneralized = new ArrayList<>();
+		boolean progress = true;
+		while (progress) {
+			progress = false;
+			for (StreamIndex si : indicies) {
+				if (basisModel.getVariableNames().contains(si.getEncoded().str)) {
+					if (toGeneralize.contains(si)) {
+						progress = true;
+						Interval interval = generalizeInterval(si);
+						generalized.put(si, interval);
+					} else {
+						unGeneralized.add(si);
+					}
+				} else {
+					progress = true;
+				}
+			}
+			if (progress & (! unGeneralized.isEmpty())) {
+				// Re-try the remaining stream indices ..
+				indicies = unGeneralized;
+				unGeneralized = new ArrayList<>();
 			}
 		}
 
@@ -95,6 +113,21 @@ public class ModelGeneralizer {
 		return extractModel();
 	}
 
+	private Interval maxInterval(StreamIndex si) {
+		Type type = spec.typeMap.get(si.getStream());
+		if (type == NamedType.BOOL) {
+			return BoolInterval.ARBITRARY;
+		} else if (type == NamedType.INT) {
+			return new NumericInterval(IntEndpoint.NEGATIVE_INFINITY,IntEndpoint.POSITIVE_INFINITY);
+		} else if (type == NamedType.REAL) {
+			return new NumericInterval(RealEndpoint.NEGATIVE_INFINITY,RealEndpoint.POSITIVE_INFINITY);
+		} else if (type instanceof SubrangeIntType || type instanceof EnumType) {
+			return new NumericInterval(IntEndpoint.NEGATIVE_INFINITY,IntEndpoint.POSITIVE_INFINITY);
+		} else {
+			throw new IllegalArgumentException("Unknown type in generalization: " + type);
+		}
+	}
+	
 	private Interval generalizeInterval(StreamIndex si) {
 		Type type = spec.typeMap.get(si.getStream());
 		if (type == NamedType.BOOL) {
