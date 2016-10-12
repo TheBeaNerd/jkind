@@ -83,11 +83,12 @@ public class ModelGeneralizer {
 			throw new IllegalStateException("Internal JKind error during interval generalization");
 		}
 
-		// Generalize the list of user provided variables ..		
-		List<StreamIndex> unGeneralized = new ArrayList<>();
-		boolean progress = true;
-		while (progress) {
+		// Generalize the list of user provided variables ..
+		
+		boolean progress;
+		do {
 			progress = false;
+			List<StreamIndex> unGeneralized = new ArrayList<>();
 			for (StreamIndex si : indicies) {
 				if (basisModel.getVariableNames().contains(si.getEncoded().str)) {
 					if (toGeneralize.contains(si)) {
@@ -101,12 +102,8 @@ public class ModelGeneralizer {
 					progress = true;
 				}
 			}
-			if (progress & (! unGeneralized.isEmpty())) {
-				// Re-try the remaining stream indices ..
-				indicies = unGeneralized;
-				unGeneralized = new ArrayList<>();
-			}
-		}
+			indicies = new ArrayList<>(unGeneralized);
+		} while (progress & (! indicies.isEmpty()));
 
 		// Clean up the toGeneralize Queue ..
 		toGeneralize.clear();
