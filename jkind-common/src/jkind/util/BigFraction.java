@@ -18,9 +18,25 @@ public class BigFraction implements Comparable<BigFraction> {
 
 	// The numerator and denominator are always stored in reduced form with the
 	// denominator always positive
-	final private BigInteger num;
-	final private BigInteger denom;
-
+	final protected BigInteger num;
+	final protected BigInteger denom;
+	
+	private static final BigInteger bigIntegerNegativeOne = BigInteger.ONE.negate();
+	protected BigFraction(int sign) {
+		// This constructor allows the creation of Unbounded Fractions
+		// +1/0 = + Infinity
+		// -1/0 = - Infinity
+		//  0/0 =   Indeterminate
+		denom = BigInteger.ZERO;
+		if (sign < 0) {
+			num = bigIntegerNegativeOne;
+		} else if (sign > 0) {
+			num = BigInteger.ONE;
+		} else {
+			num = BigInteger.ZERO;
+		}
+	}
+	
 	public BigFraction(BigInteger num, BigInteger denom) {
 		if (num == null || denom == null) {
 			throw new NullPointerException();
@@ -60,6 +76,10 @@ public class BigFraction implements Comparable<BigFraction> {
 		return denom;
 	}
 
+	public boolean isFinite() {
+		return(denom != BigInteger.ZERO);
+	}
+	
 	public BigFraction add(BigFraction val) {
 		return new BigFraction(num.multiply(val.denom).add(val.num.multiply(denom)),
 				denom.multiply(val.denom));
