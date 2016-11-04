@@ -118,7 +118,7 @@ public class UnboundFraction extends BigFraction {
 	public UnboundFraction inverseLimit(int sign) {
 		if (isFinite()) {
 			if (num.equals(BigInteger.ZERO)) {
-				return (sign < 0) ? NEGATIVE_INFINITY : POSITIVE_INFINITY;
+				return (sign == 0) ? INDETERMINATE : ((sign < 0) ? NEGATIVE_INFINITY : POSITIVE_INFINITY);
 			}
 			return new UnboundFraction(denom,num);
 		}
@@ -155,6 +155,26 @@ public class UnboundFraction extends BigFraction {
 			round = round.negate();
 		}
 		return new UnboundFraction(divAndRem[0].add(round));
+	}
+	
+	@Override
+	public UnboundFraction divide(BigFraction x) {
+		return multiply(((UnboundFraction) x).inverse());
+	}
+	
+	@Override
+	public UnboundFraction divide(BigInteger x) {
+		return divide(new UnboundFraction(x));
+	}
+	
+	@Override
+	public UnboundFraction subtract(BigInteger x) {
+		return subtract(new UnboundFraction(x));
+	}
+	
+	@Override
+	public UnboundFraction add(BigInteger x) {
+		return add(new UnboundFraction(x));
 	}
 	
 	private static final UnboundFraction testValues[] = {
