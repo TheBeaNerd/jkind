@@ -28,17 +28,24 @@ public class ValueInterval extends EvaluatableValue {
 		this(arg.min,arg.max);
 	}
 	
+	public UnboundFraction getHigh() {
+		return max;
+	}
+	
+	public UnboundFraction getLow() {
+		return min;
+	}
+	
 	private static UnboundFraction not(UnboundFraction x) {
-		return UnboundFraction.ONE.subtract(x);
+		return (x.signum() == 0)  ? UnboundFraction.ONE : UnboundFraction.ZERO;
 	}
 	
 	private static UnboundFraction or(UnboundFraction x, UnboundFraction y) {
-		UnboundFraction sum = x.add(y);	
-		return sum.equals(UnboundFraction.ZERO) ? UnboundFraction.ZERO : UnboundFraction.ONE;
+		return (x.signum() == 0) && (y.signum() == 0) ? UnboundFraction.ZERO : UnboundFraction.ONE;
 	}
 	
 	private static UnboundFraction and(UnboundFraction x, UnboundFraction y) {
-		return not(or(not(x),not(x)));
+		return (x.signum() == 0) || (y.signum() == 0) ? UnboundFraction.ZERO : UnboundFraction.ONE;
 	}	
 	
 	@Override
@@ -63,7 +70,9 @@ public class ValueInterval extends EvaluatableValue {
 		ValueInterval right = (ValueInterval) arg;
 		UnboundFraction rmin = and(min,right.min);
 		UnboundFraction rmax = and(max,right.max);
-		return new ValueInterval(rmin,rmax);
+		ValueInterval res = new ValueInterval(rmin,rmax);
+		//System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  | (" + this + " and " + arg + ") = " + res);
+		return res;
 	}
 	
 	@Override
@@ -71,12 +80,16 @@ public class ValueInterval extends EvaluatableValue {
 		ValueInterval right = (ValueInterval) arg;
 		UnboundFraction rmin = or(min,right.min);
 		UnboundFraction rmax = or(max,right.max);
-		return new ValueInterval(rmin,rmax);
+		ValueInterval res = new ValueInterval(rmin,rmax);
+		//System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  | (" + this + " or " + arg + ") = " + res);
+		return res;
 	}
 	
 	@Override
 	public ValueInterval not() {
-		return new ValueInterval(not(max),not(min));
+		ValueInterval res = new ValueInterval(not(max),not(min));
+		//System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  | (not " + this + ") = " + res);
+		return res;
 	}
 	
 	@Override
@@ -109,35 +122,41 @@ public class ValueInterval extends EvaluatableValue {
 	@Override
 	public ValueInterval equalop(EvaluatableValue arg) {
 		ValueInterval right = (ValueInterval) arg;
-		// If the ranges no not overlap, then our max is zero.  Else it includes one.
+		// (this == right) always if min=max always
+		UnboundFraction rmin = ((min.compareTo(right.min) == 0) &&
+				                (max.compareTo(right.max) == 0) &&
+				                (min.compareTo(max) == 0)) ? 
+						          UnboundFraction.ONE : UnboundFraction.ZERO;
+		// (this != right) always if the ranges never overlap
 		UnboundFraction rmax = ((max.compareTo(right.min) < 0) || (right.max.compareTo(min) < 0)) ?
 				               UnboundFraction.ZERO : UnboundFraction.ONE;
-		// If they are all exactly the same, then our minimum is one.  Else it includes zero.
-		UnboundFraction rmin = ((min.compareTo(right.min) == 0) &&
-						        (max.compareTo(right.max) == 0) &&
-						        (min.compareTo(max) == 0)) ? 
-						        UnboundFraction.ONE : UnboundFraction.ZERO;
-		return new ValueInterval(rmin,rmax);
+		ValueInterval res = new ValueInterval(rmin,rmax);
+		//System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  | (" + this + " == " + arg + ") = " + res);
+		return res;
 	}
 
 	@Override
 	public ValueInterval less(EvaluatableValue arg) {
 		ValueInterval right = (ValueInterval) arg;
-		// If the right.max is always less than this.min our max is zero.  Else it includes one.
-		UnboundFraction rmax = (right.max.compareTo(min) < 0) ? UnboundFraction.ZERO : UnboundFraction.ONE;
-		// If this.max is always less than right.min then our min is true.  Else it includes zero.
-		UnboundFraction rmin = (max.compareTo(right.min) < 0) ? UnboundFraction.ONE : UnboundFraction.ZERO;
-		return new ValueInterval(rmin,rmax);
+		// (this < right)  if this.max < right.min
+		UnboundFraction rmin = (max.compareTo(right.min) <  0) ? UnboundFraction.ONE : UnboundFraction.ZERO;
+		// !(this < right)  if right.max <= this.min
+		UnboundFraction rmax = (right.max.compareTo(min) <= 0) ? UnboundFraction.ZERO : UnboundFraction.ONE;
+		ValueInterval res = new ValueInterval(rmin,rmax);
+		//System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  | (" + this + " < " + arg + ") = " + res);
+		return res;
 	}
 
 	@Override
 	public ValueInterval greater(EvaluatableValue arg) {
 		ValueInterval right = (ValueInterval) arg;
-		// If the right.min is always greater than this.max our max is zero.  Else it includes one.
-		UnboundFraction rmax = (right.min.compareTo(max) > 0) ? UnboundFraction.ZERO : UnboundFraction.ONE;
-		// If this.min is always greater than right.max then our min is true.  Else it includes zero.
-		UnboundFraction rmin = (max.compareTo(right.min) < 0) ? UnboundFraction.ONE : UnboundFraction.ZERO;
-		return new ValueInterval(rmin,rmax);
+		// (this > right)  if right.max < this.min
+		UnboundFraction rmin = (right.max.compareTo(min) <  0) ? UnboundFraction.ONE : UnboundFraction.ZERO;
+		// !(this > right)  if this.max <= right.min
+		UnboundFraction rmax = (max.compareTo(right.min) <= 0) ? UnboundFraction.ZERO : UnboundFraction.ONE;
+		ValueInterval res = new ValueInterval(rmin,rmax);
+		//System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  | (" + this + " > " + arg + ") = " + res);
+		return res;
 	}
 
 	@Override
