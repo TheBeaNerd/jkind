@@ -3,15 +3,9 @@ package jkind.lustre.values;
 import java.math.BigInteger;
 
 import jkind.lustre.BinaryOp;
-<<<<<<< Updated upstream
-import jkind.lustre.UnaryOp;
-import jkind.util.BigFraction;
-=======
 import jkind.lustre.Type;
 import jkind.lustre.UnaryOp;
 import jkind.util.BigFraction;
-import jkind.util.UnboundFraction;
->>>>>>> Stashed changes
 
 public abstract class EvaluatableValue extends Value {
 
@@ -124,11 +118,7 @@ public abstract class EvaluatableValue extends Value {
 	abstract public EvaluatableValue pre();
 	abstract public boolean isTrue();
 	abstract public boolean isFalse();
-<<<<<<< Updated upstream
-
-=======
 	abstract public EvaluatableValue cast(Type type);
->>>>>>> Stashed changes
 	abstract public EvaluatableValue valueOf(BigInteger value);
 	abstract public EvaluatableValue valueOf(BigFraction value);
 	abstract public EvaluatableValue valueOf(boolean value);

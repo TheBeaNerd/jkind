@@ -2,11 +2,8 @@ package jkind.lustre.values;
 
 import java.math.BigInteger;
 
-<<<<<<< Updated upstream
-=======
 import jkind.lustre.NamedType;
 import jkind.lustre.Type;
->>>>>>> Stashed changes
 import jkind.util.BigFraction;
 
 public class RatValue extends EvaluatableValue {
@@ -137,8 +134,6 @@ public class RatValue extends EvaluatableValue {
 	public EvaluatableValue valueOf(boolean value) {
 		return new RatValue(value ? BigFraction.ONE : BigFraction.ZERO);
 	}
-<<<<<<< Updated upstream
-=======
 
 	@Override
 	public EvaluatableValue cast(Type type) {
@@ -147,6 +142,5 @@ public class RatValue extends EvaluatableValue {
 		}
 		return this;
 	}
->>>>>>> Stashed changes
 	
 }

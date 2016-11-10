@@ -1,10 +1,7 @@
 package jkind.analysis.evaluation;
 
 import jkind.lustre.IndexedIdExpr;
-<<<<<<< Updated upstream
-=======
 import jkind.lustre.Type;
->>>>>>> Stashed changes
 
 import java.util.SortedSet;
 
@@ -36,21 +33,6 @@ public abstract class IndexedEvaluator extends EvaluatableValueEvaluator {
 		((InitIndexedEvaluator) this.initExtendedEvaluator).preState = preState;
 	}
 	
-<<<<<<< Updated upstream
-	public InputValue inputValue(EvaluatableValue value, SortedSet<Integer> defSet, SortedSet<Integer> nextSet) {
-		return new InputValue(this,value,defSet,nextSet);
-	}
-	
-	public ComputedValue computedValue(SortedSet<Integer> defSet, SortedSet<Integer> nextSet) {
-		return new ComputedValue(this,defSet,nextSet);		
-	}
-	
-	public ConstrainedValue constrainedValue() {
-		return new ConstrainedValue(this);
-	}
-	
-	abstract public EvaluatableValue trueValue();
-=======
 	public InputValue inputValue(EvaluatableValue value, Type type, SortedSet<Integer> defSet, SortedSet<Integer> nextSet) {
 		return new InputValue(this,value,type,defSet,nextSet);
 	}
@@ -65,6 +47,5 @@ public abstract class IndexedEvaluator extends EvaluatableValueEvaluator {
 	
 	abstract public EvaluatableValue trueValue();
 	abstract public EvaluatableValue falseValue();
->>>>>>> Stashed changes
 	
 }

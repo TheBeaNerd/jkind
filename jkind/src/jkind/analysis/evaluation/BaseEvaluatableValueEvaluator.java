@@ -2,10 +2,7 @@ package jkind.analysis.evaluation;
 
 import jkind.lustre.BinaryExpr;
 import jkind.lustre.BoolExpr;
-<<<<<<< Updated upstream
-=======
 import jkind.lustre.CastExpr;
->>>>>>> Stashed changes
 import jkind.lustre.Expr;
 import jkind.lustre.IfThenElseExpr;
 import jkind.lustre.IntExpr;
@@ -45,15 +42,12 @@ public abstract class BaseEvaluatableValueEvaluator extends Evaluator {
 	}
 	
 	@Override
-<<<<<<< Updated upstream
-=======
 	public EvaluatableValue visit(CastExpr e) {
 		EvaluatableValue res = (EvaluatableValue) e.expr.accept(this);
 		return res.cast(e.type);
 	}
 	
 	@Override
->>>>>>> Stashed changes
 	abstract public EvaluatableValue visit(IntExpr e);
 
 	@Override
