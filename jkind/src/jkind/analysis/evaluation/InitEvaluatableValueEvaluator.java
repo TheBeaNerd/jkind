@@ -3,6 +3,10 @@ package jkind.analysis.evaluation;
 import jkind.lustre.BinaryExpr;
 import jkind.lustre.BinaryOp;
 import jkind.lustre.BoolExpr;
+<<<<<<< Updated upstream
+=======
+import jkind.lustre.CastExpr;
+>>>>>>> Stashed changes
 import jkind.lustre.IdExpr;
 import jkind.lustre.IntExpr;
 import jkind.lustre.RealExpr;
