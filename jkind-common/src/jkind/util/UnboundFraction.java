@@ -7,7 +7,8 @@ public class UnboundFraction extends BigFraction {
 	public static final UnboundFraction NEGATIVE_INFINITY = new UnboundFraction(-1);
 	public static final UnboundFraction ZERO = new UnboundFraction(BigInteger.ZERO);
 	public static final UnboundFraction ONE = new UnboundFraction(BigInteger.ONE);
-
+	public static final UnboundFraction TWO = new UnboundFraction(BigInteger.valueOf(2));
+	
 	// An indeterminate value can be any value ..
 	public static final UnboundFraction INDETERMINATE = new UnboundFraction(0);
 	// The numerator and denominator are always stored in reduced form with the
@@ -46,6 +47,11 @@ public class UnboundFraction extends BigFraction {
 		super(arg.num,arg.denom);		
 	}
 
+	public BigFraction toBigFraction() {
+		assert(isFinite());
+		return new BigFraction(num,denom);
+	}
+	
 	@Override
 	public int compareTo(BigFraction arg) {
 		if (isFinite() && arg.isFinite()) {

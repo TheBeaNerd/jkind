@@ -2,6 +2,11 @@ package jkind.lustre.values;
 
 import java.math.BigInteger;
 
+<<<<<<< Updated upstream
+=======
+import jkind.lustre.NamedType;
+import jkind.lustre.Type;
+>>>>>>> Stashed changes
 import jkind.util.BigFraction;
 import jkind.util.UnboundFraction;
 
@@ -233,4 +238,15 @@ public class ValueInterval extends EvaluatableValue {
 		return new ValueInterval(new UnboundFraction(value ? BigFraction.ONE : BigFraction.ZERO));
 	}
 
+<<<<<<< Updated upstream
+=======
+	@Override
+	public EvaluatableValue cast(Type type) {
+		if (type.equals(NamedType.INT)) {
+			return new ValueInterval(new UnboundFraction(min.floor()),new UnboundFraction(max.floor()));
+		}
+		return this;
+	}
+
+>>>>>>> Stashed changes
 }
