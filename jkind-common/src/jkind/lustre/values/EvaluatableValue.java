@@ -78,15 +78,17 @@ public abstract class EvaluatableValue extends Value {
 	}
 	
 	public EvaluatableValue int_divide(EvaluatableValue right) {
-		return multiply(right.truncate().inverse().truncate());
+		EvaluatableValue x = right.truncate();
+		EvaluatableValue y = x.inverse();
+		return multiply(y).truncate();
 	}
 
 	public EvaluatableValue xor(EvaluatableValue right) {
-		return equalop(right).negate();
+		return equalop(right).not();
 	}
 
 	public EvaluatableValue notequal(EvaluatableValue right) {
-		return equalop(right).negate();
+		return equalop(right).not();
 	}
 
 	public EvaluatableValue implies(EvaluatableValue right) {

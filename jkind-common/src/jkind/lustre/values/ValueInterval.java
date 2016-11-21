@@ -22,6 +22,10 @@ public class ValueInterval extends EvaluatableValue {
 		this.max = max;
 	}
 
+	private boolean isBoolean() {
+		return isBoolean(min) && isBoolean(max);
+	}
+	
 	public ValueInterval(UnboundFraction value) {
 		this(value,value);
 	}
@@ -38,15 +42,24 @@ public class ValueInterval extends EvaluatableValue {
 		return min;
 	}
 	
+	private static boolean isBoolean(UnboundFraction x) {
+		return x.equals(UnboundFraction.ONE) || x.equals(UnboundFraction.ZERO);
+	}
+	
 	private static UnboundFraction not(UnboundFraction x) {
+		assert(isBoolean(x));
 		return (x.signum() == 0)  ? UnboundFraction.ONE : UnboundFraction.ZERO;
 	}
 	
 	private static UnboundFraction or(UnboundFraction x, UnboundFraction y) {
+		assert(isBoolean(x));
+		assert(isBoolean(y));
 		return (x.signum() == 0) && (y.signum() == 0) ? UnboundFraction.ZERO : UnboundFraction.ONE;
 	}
 	
 	private static UnboundFraction and(UnboundFraction x, UnboundFraction y) {
+		assert(isBoolean(x));
+		assert(isBoolean(y));
 		return (x.signum() == 0) || (y.signum() == 0) ? UnboundFraction.ZERO : UnboundFraction.ONE;
 	}	
 	
@@ -72,8 +85,10 @@ public class ValueInterval extends EvaluatableValue {
 		ValueInterval right = (ValueInterval) arg;
 		UnboundFraction rmin = and(min,right.min);
 		UnboundFraction rmax = and(max,right.max);
+		//System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  | (" + this + " and " + arg + ") = " + "(" + rmin + "," + rmax + ")");
 		ValueInterval res = new ValueInterval(rmin,rmax);
 		//System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  | (" + this + " and " + arg + ") = " + res);
+		assert(res.isBoolean());
 		return res;
 	}
 	
@@ -84,6 +99,7 @@ public class ValueInterval extends EvaluatableValue {
 		UnboundFraction rmax = or(max,right.max);
 		ValueInterval res = new ValueInterval(rmin,rmax);
 		//System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  | (" + this + " or " + arg + ") = " + res);
+		assert(res.isBoolean());
 		return res;
 	}
 	
@@ -91,6 +107,7 @@ public class ValueInterval extends EvaluatableValue {
 	public ValueInterval not() {
 		ValueInterval res = new ValueInterval(not(max),not(min));
 		//System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  | (not " + this + ") = " + res);
+		assert(res.isBoolean());
 		return res;
 	}
 	
@@ -134,6 +151,7 @@ public class ValueInterval extends EvaluatableValue {
 				               UnboundFraction.ZERO : UnboundFraction.ONE;
 		ValueInterval res = new ValueInterval(rmin,rmax);
 		//System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  | (" + this + " == " + arg + ") = " + res);
+		assert(res.isBoolean());
 		return res;
 	}
 
@@ -146,6 +164,7 @@ public class ValueInterval extends EvaluatableValue {
 		UnboundFraction rmax = (right.max.compareTo(min) <= 0) ? UnboundFraction.ZERO : UnboundFraction.ONE;
 		ValueInterval res = new ValueInterval(rmin,rmax);
 		//System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  | (" + this + " < " + arg + ") = " + res);
+		assert(res.isBoolean());
 		return res;
 	}
 
@@ -158,38 +177,55 @@ public class ValueInterval extends EvaluatableValue {
 		UnboundFraction rmax = (max.compareTo(right.min) <= 0) ? UnboundFraction.ZERO : UnboundFraction.ONE;
 		ValueInterval res = new ValueInterval(rmin,rmax);
 		//System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  | (" + this + " > " + arg + ") = " + res);
+		assert(res.isBoolean());
 		return res;
 	}
 
 	@Override
 	public ValueInterval truncate() {
-		return new ValueInterval(min.truncateLimit(+1),max.truncateLimit(-1));
+		//System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  | (" + min + " <= " + max + ")");
+		UnboundFraction newmin = min.truncate();
+		UnboundFraction newmax = max.truncate();
+		//System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  | (" + newmin + " <= " + newmax + ")");
+		return new ValueInterval(newmin,newmax);
 	}
 	
 	@Override
 	public ValueInterval modulus(EvaluatableValue modArg) {
 		ValueInterval modulusInterval = (ValueInterval) modArg;
 		if (modulusInterval.min.equals(modulusInterval.max)) {
+			if (min.equals(max)) {
+				BigInteger val = min.floor();
+				BigInteger mod = modulusInterval.min.floor();
+				return new ValueInterval(new UnboundFraction(val.mod(mod)));
+			}
 			UnboundFraction modulus = modulusInterval.min;
 			if (modulus.compareTo(UnboundFraction.ZERO) < 0) {
 				if ((modulus.compareTo(min) < 0) && (max.compareTo(UnboundFraction.ZERO) <= 0)) {
 					return this;
 				} else {
-					return new ValueInterval(modulus,UnboundFraction.ZERO);
+					return new ValueInterval(modulus.add(UnboundFraction.ONE),UnboundFraction.ZERO);
 				}
 			} else {
 				if ((max.compareTo(modulus) < 0) && (UnboundFraction.ZERO.compareTo(min) <= 0)) {
 					return this;
 				} else {
-					return new ValueInterval(UnboundFraction.ZERO,modulus);
+					return new ValueInterval(UnboundFraction.ZERO,modulus.subtract(UnboundFraction.ONE));
 				}
 			}
 		}
-		return new ValueInterval(modulusInterval.min.min(UnboundFraction.ZERO),modulusInterval.max.max(UnboundFraction.ZERO));
+		UnboundFraction modmin = modulusInterval.min.min(UnboundFraction.ZERO);
+		UnboundFraction modmax = modulusInterval.max.max(UnboundFraction.ZERO);
+		UnboundFraction minsign = (modmin.signum() < 0) ? UnboundFraction.ONE.negate() : UnboundFraction.ONE;
+		UnboundFraction maxsign = (modmax.signum() < 0) ? UnboundFraction.ONE.negate() : UnboundFraction.ONE;
+		UnboundFraction minmin = modmin.subtract(minsign);
+		UnboundFraction maxmax = modmax.subtract(maxsign);
+		return new ValueInterval(minmin,maxmax);
 	}
 	
 	@Override
 	public ValueInterval ite(EvaluatableValue arg1, EvaluatableValue arg2) {
+		assert(isBoolean());
 		ValueInterval left = (ValueInterval) arg1;
 		ValueInterval right = (ValueInterval) arg2;
 		if (min.equals(max)) {

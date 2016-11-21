@@ -102,6 +102,11 @@ public class UnboundFraction extends BigFraction {
 		return INDETERMINATE;		
 	}
 	 
+	public UnboundFraction truncate() {
+		BigInteger value = this.floor();
+		return new UnboundFraction(value);
+	}
+	
 	@Override
 	public UnboundFraction multiply(BigFraction arg) {
 		if (isFinite() && arg.isFinite()) {

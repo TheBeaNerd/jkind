@@ -73,7 +73,7 @@ public class RatValue extends EvaluatableValue {
 		BigInteger num = value.getNumerator();
 		BigInteger den = value.getDenominator();
 		BigInteger divAndRem[] = num.divideAndRemainder(den);	
-		return new RatValue(new BigFraction(divAndRem[1]));
+		return new RatValue(new BigFraction(divAndRem[0]));
 	}
 
 	@Override

@@ -15,19 +15,23 @@ public abstract class BaseEvaluatableValueEvaluator extends Evaluator {
 	
 	@Override
 	public Value visit(BinaryExpr e) {
-		//System.out.println("BinaryExpr : " + e);
+		// System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  | BinaryExpr : " + e);
 		Expr leftExpr = e.left;
 		Expr rightExpr = e.right;
 		EvaluatableValue leftValue = (EvaluatableValue) leftExpr.accept(this);
 		EvaluatableValue rightValue = (EvaluatableValue) rightExpr.accept(this);			
-		return leftValue.applyBinaryOp(e.op,rightValue);
+		Value res = leftValue.applyBinaryOp(e.op,rightValue);
+		//System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  | (" + leftValue + " " + e.op + " " + rightValue + ") = " + res);
+		return res;
 	}
 
 	@Override
 	public Value visit(UnaryExpr e) {
 		//System.out.println("UnaryExpr : " + e);
 		EvaluatableValue z = ((EvaluatableValue) e.expr.accept(this));
-		return z.applyUnaryOp(e.op);
+		Value res = z.applyUnaryOp(e.op);
+		//System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  | (" + e.op + " " + z + ") = " + res);
+		return res;
 	}
 
 	@Override
@@ -38,7 +42,9 @@ public abstract class BaseEvaluatableValueEvaluator extends Evaluator {
 		EvaluatableValue testValue = (EvaluatableValue) testExpr.accept(this);
 		EvaluatableValue thenValue = (EvaluatableValue) thenExpr.accept(this);
 		EvaluatableValue elseValue = (EvaluatableValue) elseExpr.accept(this);
-		return testValue.ite(thenValue,elseValue);
+		Value res = testValue.ite(thenValue,elseValue);
+		//System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  | (" + testValue + " ? " + thenValue + " : " + elseValue + ") = " + res);
+		return res;
 	}
 	
 	@Override
