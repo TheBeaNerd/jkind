@@ -5,6 +5,8 @@ import java.math.BigInteger;
 import jkind.lustre.NamedType;
 import jkind.lustre.Type;
 import jkind.util.BigFraction;
+import jkind.util.UnboundFraction;
+import jkind.util.Util;
 
 public class RatValue extends EvaluatableValue {
 
@@ -93,14 +95,9 @@ public class RatValue extends EvaluatableValue {
 	
 	@Override
 	public EvaluatableValue modulus(EvaluatableValue right) {
-		BigFraction q = value.divide(((RatValue) right).value);
-		BigInteger num = q.getNumerator();
-		BigInteger den = q.getDenominator();
-		BigFraction m = new BigFraction(num.mod(den));
-		if (((RatValue) right).value.signum() < 0) {
-			m = ((RatValue) right).value.add(m);
-		}
-		return new RatValue(m);
+		BigInteger num = value.floor();
+		BigInteger den = ((RatValue) right).value.floor();
+		return new RatValue(new BigFraction(num.mod(den)));
 	}
 	
 	@Override
@@ -141,6 +138,14 @@ public class RatValue extends EvaluatableValue {
 			return new RatValue(new BigFraction(value.floor()));
 		}
 		return this;
+	}
+
+	@Override
+	EvaluatableValue int_divide(EvaluatableValue right) {
+		BigInteger den = ((RatValue) right).value.floor();
+		BigInteger num = value.floor();
+		EvaluatableValue res = new RatValue(new BigFraction(Util.smtDivide(num,den)));
+		return res;
 	}
 	
 }

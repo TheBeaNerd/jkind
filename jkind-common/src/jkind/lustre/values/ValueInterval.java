@@ -2,10 +2,12 @@ package jkind.lustre.values;
 
 import java.math.BigInteger;
 
+import jkind.interval.NumericEndpoint;
 import jkind.lustre.NamedType;
 import jkind.lustre.Type;
 import jkind.util.BigFraction;
 import jkind.util.UnboundFraction;
+import jkind.util.Util;
 
 public class ValueInterval extends EvaluatableValue {
 
@@ -119,13 +121,11 @@ public class ValueInterval extends EvaluatableValue {
 	@Override
 	public ValueInterval multiply(EvaluatableValue arg) {
 		ValueInterval right = (ValueInterval) arg;
-		UnboundFraction minmax = min.multiply(right.max);
-		UnboundFraction minmin = min.multiply(right.min);
-		UnboundFraction maxmax = max.multiply(right.max);
-		UnboundFraction maxmin = max.multiply(right.max);
-		UnboundFraction minres = minmax.min(minmin).min(maxmax).min(maxmin);
-		UnboundFraction maxres = minmax.max(minmin).max(maxmax).max(maxmin);
-		return new ValueInterval(minres,maxres);
+		UnboundFraction v1 = min.multiply(right.max);
+		UnboundFraction v2 = min.multiply(right.min);
+		UnboundFraction v3 = max.multiply(right.max);
+		UnboundFraction v4 = max.multiply(right.max);
+		return new ValueInterval(min(v1,v2,v3,v4),max(v1,v2,v3,v4));
 	}
 
 	@Override
@@ -193,34 +193,13 @@ public class ValueInterval extends EvaluatableValue {
 	@Override
 	public ValueInterval modulus(EvaluatableValue modArg) {
 		ValueInterval modulusInterval = (ValueInterval) modArg;
-		if (modulusInterval.min.equals(modulusInterval.max)) {
-			if (min.equals(max)) {
-				BigInteger val = min.floor();
-				BigInteger mod = modulusInterval.min.floor();
-				return new ValueInterval(new UnboundFraction(val.mod(mod)));
-			}
-			UnboundFraction modulus = modulusInterval.min;
-			if (modulus.compareTo(UnboundFraction.ZERO) < 0) {
-				if ((modulus.compareTo(min) < 0) && (max.compareTo(UnboundFraction.ZERO) <= 0)) {
-					return this;
-				} else {
-					return new ValueInterval(modulus.add(UnboundFraction.ONE),UnboundFraction.ZERO);
-				}
-			} else {
-				if ((max.compareTo(modulus) < 0) && (UnboundFraction.ZERO.compareTo(min) <= 0)) {
-					return this;
-				} else {
-					return new ValueInterval(UnboundFraction.ZERO,modulus.subtract(UnboundFraction.ONE));
-				}
-			}
+		assert(modulusInterval.min.equals(modulusInterval.max));
+		if (min.equals(max)) {
+			BigInteger val = min.floor();
+			BigInteger mod = modulusInterval.min.floor();
+			return new ValueInterval(new UnboundFraction(val.mod(mod)));
 		}
-		UnboundFraction modmin = modulusInterval.min.min(UnboundFraction.ZERO);
-		UnboundFraction modmax = modulusInterval.max.max(UnboundFraction.ZERO);
-		UnboundFraction minsign = (modmin.signum() < 0) ? UnboundFraction.ONE.negate() : UnboundFraction.ONE;
-		UnboundFraction maxsign = (modmax.signum() < 0) ? UnboundFraction.ONE.negate() : UnboundFraction.ONE;
-		UnboundFraction minmin = modmin.subtract(minsign);
-		UnboundFraction maxmax = modmax.subtract(maxsign);
-		return new ValueInterval(minmin,maxmax);
+		return new ValueInterval(UnboundFraction.ZERO,modulusInterval.min.subtract(UnboundFraction.ONE));
 	}
 	
 	@Override
@@ -277,6 +256,40 @@ public class ValueInterval extends EvaluatableValue {
 			return new ValueInterval(new UnboundFraction(min.floor()),new UnboundFraction(max.floor()));
 		}
 		return this;
+	}
+	
+	private static UnboundFraction min(UnboundFraction val, UnboundFraction... others) {
+		UnboundFraction result = val;
+		for (UnboundFraction other : others) {
+			result = result.min(other);
+		}
+		return result;
+	}
+	
+	private static UnboundFraction max(UnboundFraction val, UnboundFraction... others) {
+		UnboundFraction result = val;
+		for (UnboundFraction other : others) {
+			result = result.max(other);
+		}
+		return result;
+	}
+	
+	private static UnboundFraction div(UnboundFraction num, UnboundFraction den) {
+		assert(den.isFinite());
+		if (! num.isFinite()) {
+			return (num.signum() * den.signum() < 0) ? UnboundFraction.NEGATIVE_INFINITY : UnboundFraction.POSITIVE_INFINITY;
+		}
+		return new UnboundFraction(Util.smtDivide(num.floor(), den.floor()));
+	}
+	
+	@Override
+	EvaluatableValue int_divide(EvaluatableValue right) {
+		ValueInterval rv = (ValueInterval) right;
+		UnboundFraction v1 = div(min,rv.min);
+		UnboundFraction v2 = div(min,rv.max);
+		UnboundFraction v3 = div(max,rv.min);
+		UnboundFraction v4 = div(max,rv.max);
+		return new ValueInterval(min(v1,v2,v3,v4),max(v1,v2,v3,v4));
 	}
 
 }

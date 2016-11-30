@@ -109,10 +109,15 @@ public class UnboundFraction extends BigFraction {
 	
 	@Override
 	public UnboundFraction multiply(BigFraction arg) {
+		int s1 = arg.num.signum();
+		int s2 = num.signum();
+		if (s1 == 0 || s2 == 0) {
+			return UnboundFraction.ZERO;
+		}
 		if (isFinite() && arg.isFinite()) {
 			return new UnboundFraction(super.multiply(arg));
 		}
-		return(unboundFraction(arg.num.signum() * num.signum()));
+		return(unboundFraction(s1 * s2));
 	}
 	
 	public UnboundFraction inverse() {
